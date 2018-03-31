@@ -9,11 +9,11 @@
 using boost::asio::ip::tcp;
 
 DEFINE_string(bind_address, "::", "");
-DEFINE_uint32(bind_port, 0, "");
+DEFINE_int32(bind_port, 0, "");
 DEFINE_string(target, "", "");
-DEFINE_uint32(target_port, 0, "");
+DEFINE_int32(target_port, 0, "");
 
-static bool ValidatePort(const char *flagname, uint32_t value);
+static bool ValidatePort(const char *flagname, int32_t value);
 
 DEFINE_validator(bind_port, ValidatePort);
 DEFINE_validator(target_port, ValidatePort);
@@ -35,7 +35,7 @@ void ParseArgs(int *argc, char **argv[], tcp::endpoint *bind_ep, TargetInfo *tar
     }
 }
 
-bool ValidatePort(const char *flagname, uint32_t value) {
+bool ValidatePort(const char *flagname, int32_t value) {
     if (value > 0 && value < 65536) {
         return true;
     }
