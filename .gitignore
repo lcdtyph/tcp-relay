@@ -54,9 +54,5 @@ bld/
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
-ss-server
-ss-client
-
-obfs-server
-obfs-client
+tcp-relay
 
