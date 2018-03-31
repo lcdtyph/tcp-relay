@@ -16,7 +16,7 @@ if(NOT WIN32)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
-    find_library(BOOSTSYS boost_system)
+    find_library(BOOSTSYS NAMES boost_system boost_system-mt)
     find_library(GLOG     glog)
     find_library(GFLAGS   gflags)
 else()
