@@ -60,7 +60,9 @@ struct Peer {
     }
 
     void CancelAll() {
-        socket.cancel();
+        if (socket.is_open()) {
+            socket.cancel();
+        }
     }
 
     boost::asio::ip::tcp::socket socket;

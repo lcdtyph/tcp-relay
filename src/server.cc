@@ -35,6 +35,14 @@ public:
         }
     }
 
+    void Close() {
+        VLOG(1) << "Closing: " << client_.socket.remote_endpoint();
+        client_.CancelAll();
+        target_.CancelAll();
+        client_.socket.close();
+        target_.socket.close();
+    }
+
 private:
 
     void DoResolveTarget(std::string host, std::string port) {
@@ -94,6 +102,9 @@ private:
                     } else if (ec == boost::asio::error::operation_aborted) {
                         VLOG(1) << "Read operation canceled";
                         return;
+                    } else if (ec == boost::asio::error::bad_descriptor) {
+                        LOG(WARNING) << ec.message() << ", socket may be closed";
+                        return;
                     }
                     LOG(WARNING) << "Relay read unexcepted error: " << ec;
                     src.CancelAll();
@@ -129,15 +140,36 @@ private:
     tcp::resolver resolver_;
 };
 
+void ForwardServer::ReleaseSession(Session *ptr) {
+    sessions_.erase(ptr);
+    delete ptr;
+}
+
 void ForwardServer::DoAccept() {
     acceptor_.async_accept([this](bsys::error_code ec, tcp::socket socket) {
         if (!ec) {
             VLOG(1) << "A new client accepted: " << socket.remote_endpoint();
-            std::make_shared<Session>(std::move(socket), target_)->Start();
+            std::shared_ptr<Session> session(
+                new Session(std::move(socket), target_),
+                std::bind(&ForwardServer::ReleaseSession, this, std::placeholders::_1)
+            );
+            sessions_.emplace(session.get(), session);
+            session->Start();
         }
         if (running_) {
             DoAccept();
         }
     });
+}
+
+void ForwardServer::Stop() {
+    acceptor_.cancel();
+    running_ = false;
+    for (auto &kv : sessions_) {
+        auto p = kv.second.lock();
+        if (p) {
+            p->Close();
+        }
+    }
 }
 
