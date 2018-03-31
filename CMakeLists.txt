@@ -31,10 +31,14 @@ else()
     set(GFLAGS gflags)
 endif()
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 list(APPEND DEPS
      ${BOOSTSYS}
      ${GLOG}
      ${GFLAGS}
+     Threads::Threads
     )
 
 add_executable(${PROJECT_NAME} ${SOURCES})
